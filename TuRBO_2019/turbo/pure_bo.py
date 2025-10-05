@@ -10,8 +10,6 @@ import gpytorch
 import numpy as np
 import torch
 from torch.quasirandom import SobolEngine
-
-# Assumes these modules are importable based on your project structure
 from .gp import train_gp 
 from .turbo_1 import Turbo1 
 from .utils import from_unit_cube, latin_hypercube, to_unit_cube
@@ -44,7 +42,7 @@ class PureBO(Turbo1):
     def _create_candidates(self, X, fX, length, n_training_steps, hypers):
         """Generates candidates in the WHOLE [0,1]^d space, ignoring the 'length' parameter."""
         
-        # 1. GP Training (Same as Turbo1/TurboM)
+        # GP Training (Same as Turbo1/TurboM)
         assert X.min() >= 0.0 and X.max() <= 1.0
 
         mu, sigma = np.median(fX), fX.std()
@@ -64,14 +62,14 @@ class PureBO(Turbo1):
             )
             hypers = gp.state_dict()
         
-        # 2. Candidate Generation (Core change: Global Sobol Sampling)
+        # Candidate Generation (Core change: Global Sobol Sampling)
         seed = np.random.randint(int(1e6))
         sobol = SobolEngine(self.dim, scramble=True, seed=seed)
         
         # Generate Sobol sequence over the entire [0, 1]^d space
         X_cand = sobol.draw(self.n_cand).to(dtype=dtype, device=device).cpu().detach().numpy()
         
-        # 3. Thompson Sampling (Same as Turbo1/TurboM)
+        # Thompson Sampling (Same as Turbo1/TurboM)
         if len(X_cand) < self.min_cuda:
             device, dtype = torch.device("cpu"), torch.float64
         else:
@@ -91,7 +89,7 @@ class PureBO(Turbo1):
     def optimize(self):
         """Runs Pure BO (Global Thompson Sampling/Acquisition) without restarts or TR checks."""
         
-        # 1. Initialization
+        # Initialization
         self._restart()
         X_init = latin_hypercube(self.n_init, self.dim)
         X_init = from_unit_cube(X_init, self.lb, self.ub)
@@ -108,7 +106,7 @@ class PureBO(Turbo1):
             print(f"Pure BO Starting from fbest = {fbest:.4}")
             sys.stdout.flush()
 
-        # 2. Main loop: run until max_evals is reached
+        # Main loop: run until max_evals is reached
         while self.n_evals < self.max_evals:
             # Data preparation
             X = to_unit_cube(deepcopy(self._X), self.lb, self.ub)
