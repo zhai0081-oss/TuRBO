@@ -256,7 +256,7 @@ plt.plot(np.minimum.accumulate(fX_baseline), 'g', lw=3, label="Turbo1 Cumulative
 plt.plot(np.minimum.accumulate(fX_pure_bo), 'b', lw=3, label="Pure BO Cumulative Best")
 
 plt.xlim([0, max_len])
-plt.ylim([0, 30])
+plt.ylim([0, 500])
 plt.title(f"{DIM}D Levy Function Optimization Progress (TR_m vs. TR_1 vs. NoTR)")
 plt.xlabel("Evaluation")
 plt.ylabel("Function Value")
